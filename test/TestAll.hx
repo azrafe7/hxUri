@@ -5,6 +5,7 @@ import hxUri.TestParse;
 import hxUri.TestResolve;
 import hxUri.TestToString;
 import hxUri.Uri;
+import utest.ui.text.PrintReport;
 
 import utest.Runner;
 import utest.ui.Report;
@@ -19,7 +20,7 @@ class TestAll {
 		runner.addCase(new TestToString());
 		runner.addCase(new TestResolve());
 		
-		Report.create(runner);
+		new PrintReport(runner);
 		runner.run();
 		
 	#if flash

@@ -204,7 +204,7 @@ class UriData {
 	}
 	
 	
-    // Restore the URI to it's stringy glory.
+    // Restore the URI to its stringy glory.
     public function toString():String {
         var str = "";
         if (!Tools.isNullOrEmpty(this.getScheme())) {
