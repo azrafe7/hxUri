@@ -56,8 +56,30 @@ import Map;
 @:allow(hxUri.UriQuery)
 abstract Uri(UriData) from UriData to UriData {
 
+	inline public function new(uri:String = "") {
+		this = new UriData(uri);
+	}
+	
+	@:to public function toString():String {
+		return this.toString();
+	}
+	
+	@:from static public function fromString(str:String):Uri {
+		return new Uri(str);
+	}
+	
+	
 	//// HELPER FUNCTIONS /////
   
+    // TODO: Make these do something
+    static function escape(source) {
+        return source;
+    }
+
+    static function unescape(source) {
+        return source;
+    }
+
     // RFC3986 §5.2.3 (Merge Paths)
     static function merge(base:Uri, relPath:String) {
         var dirName = ~/^(.*)\//;
@@ -65,7 +87,7 @@ abstract Uri(UriData) from UriData to UriData {
             return "/" + relPath;
         }
         else {
-			var basePath = (dirName.match(base.getPath())) ? matchAll(dirName, base.getPath())[0] : "";
+			var basePath = (dirName.match(base.getPath())) ? Tools.matchAll(dirName, base.getPath())[0] : "";
 			return basePath + relPath;
         }
     }
@@ -77,21 +99,6 @@ abstract Uri(UriData) from UriData to UriData {
     // not be "..".
     static var doubleDot:EReg = ~/\/((?!\.\.\/)[^\/]*)\/\.\.\//;
 
-	
-	static function matchAll(regex:EReg, str:String):Array<String> {
-		var result = [];
-		
-		if (regex.match(str)) {
-			try {
-				var i = 0;
-				while (true) {
-					result.push(regex.matched(i++));
-				}
-			} catch (err:Dynamic) { }
-		}
-		
-		return result;
-	}
 	
     static function removeDotSegments(path:String):String {
         if (Tools.isNullOrEmpty(path)) {
@@ -116,27 +123,6 @@ abstract Uri(UriData) from UriData to UriData {
         }
         return newPath;
     }
-
-    // TODO: Make these do something
-    static function escape(source) {
-        return source;
-    }
-
-    static function unescape(source) {
-        return source;
-    }
-
-	inline public function new(uri:String = "") {
-		this = new UriData(uri);
-	}
-	
-	@:to public function toString():String {
-		return this.toString();
-	}
-	
-	@:from static public function fromString(str:String):Uri {
-		return new Uri(str);
-	}
 }    
 
 
@@ -155,7 +141,7 @@ class UriData {
     // Constructor for the URI object.  Parse a string into its components.
 	public function new(uri:String = "") {
 		
-		var result = Uri.matchAll(Uri.parser, uri);
+		var result = Tools.matchAll(Uri.parser, uri);
         
         // Keep the results in private variables.
 		for (i in 0...6) if (result[i] == null) result[i] = "";
@@ -291,6 +277,7 @@ class UriData {
 
 typedef UriQueryParams = OrderedMap<String, Array<String>>;
 
+
 //// URIQuery CLASS /////
 
 class UriQuery {
@@ -298,17 +285,7 @@ class UriQuery {
 	public var separator:String = null;
 	public var params:UriQueryParams = null;
 	
-	
-	public static function fromString(sourceString:String, sep:String = null):UriQuery {
-        var result = new UriQuery();
-        if (sep != null) {
-            result.separator = sep;
-        }
-        result.addStringParams(sourceString);
-        return result;
-	}
-	
-	
+
 	public function new(separator:String = "&") { 
 		this.separator = separator;
 		this.params = new OrderedMap(new Map());
@@ -357,15 +334,40 @@ class UriQuery {
 		}
         return kvp.join(this.separator);
     }
+	
+	
+	public static function fromString(sourceString:String, sep:String = null):UriQuery {
+        var result = new UriQuery();
+        if (sep != null) {
+            result.separator = sep;
+        }
+        result.addStringParams(sourceString);
+        return result;
+	}
+	
 }
 
 
-class Tools {
+private class Tools {
 	
 	public inline static function isNullOrEmpty(str:String):Bool {
 		return str == null || str == "";
 	}
 
+	public static function matchAll(regex:EReg, str:String):Array<String> {
+		var result = [];
+		
+		if (regex.match(str)) {
+			try {
+				var i = 0;
+				while (true) {
+					result.push(regex.matched(i++));
+				}
+			} catch (err:Dynamic) { }
+		}
+		
+		return result;
+	}
 }
 
 
@@ -378,7 +380,7 @@ class Tools {
  * 
  */
 
-class OrderedMapIterator<K,V> {
+private class OrderedMapIterator<K,V> {
 
     var map : OrderedMap<K,V>;
     var index : Int = 0;
