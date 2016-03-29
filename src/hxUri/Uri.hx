@@ -46,7 +46,8 @@ import Map;
  *  - fluent interface for Uri setters
  *  - using an OrderedMap for params
  *  - printing params retains the order of insertion (they are not sorted as in the original impl.)
- *  - add getParams(key) to get the array of values associated with key
+ *  - added getParams(key) to get the array of values associated with key
+ *  - init uri fields to "" (empty string), instead of null
  *  - to/from String
  */
 
@@ -142,11 +143,11 @@ abstract Uri(UriData) from UriData to UriData {
 @:allow(hxUri.Uri)
 class UriData {
 	
-	var scheme:String    = null;
-	var authority:String = null;
-	var path:String      = null;
-	var query:String     = null;
-	var fragment:String  = null;
+	var scheme:String    = "";
+	var authority:String = "";
+	var path:String      = "";
+	var query:String     = "";
+	var fragment:String  = "";
 	
 	
     //// URI CLASS /////
@@ -157,7 +158,7 @@ class UriData {
 		var result = Uri.matchAll(Uri.parser, uri);
         
         // Keep the results in private variables.
-		//for (i in 0...6) if (i >= result.length - 1) result[i] = null;
+		for (i in 0...6) if (result[i] == null) result[i] = "";
         scheme    = result[1];
         authority = result[2];
         path      = result[3];
