@@ -2,7 +2,7 @@
 <project>
 	
 	<meta title="project" package="com.example.project" version="1.0.0" company="Company Name" />
-	<app main="TestAll" path="bin/test" file="test" />
+	<app main="TestAll" path="bin/test" file="testAll" />
 	<window background="#101010" fps="60" />
 	<window width="600" height="400" unless="mobile" />
 	<window orientation="landscape" vsync="false" antialiasing="0" if="cpp" />

@@ -1,4 +1,4 @@
-/* Tests from http://skew.org/uri/uri_tests.html */
+/* Tests from resolve.t.html and http://skew.org/uri/uri_tests.html */
 
 package hxUri;
 
@@ -18,8 +18,8 @@ class TestResolve {
 	
 	public function new() { }
 	
-    public function testResolve() {
-		for (test in tests) {
+    public function testResolveSkew() {
+		for (test in testsSkew) {
 			var ref = test.ref;
 			var base = test.base;
 			var expected = test.expected;
@@ -35,10 +35,92 @@ class TestResolve {
 				Assert.allows(expected, result, errorMsg);
 			}
 		}
+		
+		var passed = Assert.results.filter(function(a) { return a.match(Success(_)); }).length;
+		Assert.warn('hxUri resolve (skew.org tests): $passed of ${Assert.results.length} passed');
+    }
+
+    public function testResolve() {
+		for (i in 0...resolve_tests.length) {
+			var test = resolve_tests[i];
+			var ref = test[0];
+			var base = this.base;
+			var expected = test[1];
+			
+			var result = Uri.fromString(ref).resolve(base).toString();
+			
+			var errorMsg = '[test ${i + 1}]: expected "$expected" but it is "$result"';
+			
+			Assert.equals(expected, result, errorMsg);
+		}
+		
+		var passed = Assert.results.filter(function(a) { return a.match(Success(_)); }).length;
+		Assert.warn('hxUri resolve (js-uri tests): $passed of ${Assert.results.length} passed');
     }
 
 	
-	static var tests:Array<UriTest> = [
+	// from resolve.t.html
+	var base = new Uri("http://a/b/c/d;p?q");
+	var resolve_tests:Array<Array<String>> = [
+		// Normal examples.
+		["g:h",     "g:h"],
+		["g",       "http://a/b/c/g"],
+		["./g",     "http://a/b/c/g"],
+		["g/",      "http://a/b/c/g/"],
+		["/g",      "http://a/g"],
+		["//g",     "http://g"],
+		["?y",      "http://a/b/c/d;p?y"],
+		["g?y",     "http://a/b/c/g?y"],
+		["#s",      "http://a/b/c/d;p?q#s"],
+		["g#s",     "http://a/b/c/g#s"],
+		["g?y#s",   "http://a/b/c/g?y#s"],
+		[";x",      "http://a/b/c/;x"],
+		["g;x",     "http://a/b/c/g;x"],
+		["g;x?y#s", "http://a/b/c/g;x?y#s"],
+		["",        "http://a/b/c/d;p?q"],
+		[".",       "http://a/b/c/"],
+		["./",      "http://a/b/c/"],
+		["..",      "http://a/b/"],
+		["../",     "http://a/b/"],
+		["../g",    "http://a/b/g"],
+		["../..",   "http://a/"],
+		["../../",  "http://a/"],
+		["../../g", "http://a/g"],
+
+		// Abnormal examples.
+		// 1. Going up further than is possible.
+		["../../../g",    "http://a/g"],
+		["../../../../g", "http://a/g"],
+
+		// 2. Not matching dot boundaries correctly.
+		["/./g",  "http://a/g"],
+		["/../g", "http://a/g"],
+		["g.",    "http://a/b/c/g."],
+		[".g",    "http://a/b/c/.g"],
+		["g..",   "http://a/b/c/g.."],
+		["..g",   "http://a/b/c/..g"],
+
+		// 3. Nonsensical path segments.
+		["./../g",     "http://a/b/g"],
+		["./g/.",      "http://a/b/c/g/"],
+		["g/./h",      "http://a/b/c/g/h"],
+		["g/../h",     "http://a/b/c/h"],
+		["g;x=1/./y",  "http://a/b/c/g;x=1/y"],
+		["g;x=1/../y", "http://a/b/c/y"],
+
+		// 4. Paths in the query string should be ignored.
+		["g?y/./x",  "http://a/b/c/g?y/./x"],
+		["g?y/../x", "http://a/b/c/g?y/../x"],
+		["g#s/./x",  "http://a/b/c/g#s/./x"],
+		["g#s/../x", "http://a/b/c/g#s/../x"],
+
+		// 5. Backwards compatibility
+		["http:g", "http:g"]
+	];
+	
+	
+	// from resolve.t.html
+	var testsSkew:Array<UriTest> = [
 		{ num: 1, ref: "", base: "/web/20150519075506/http://example.com/path?query#frag", expected: ["/web/20150519075506/http://example.com/path?query"] },
 		{ num: 2, ref: "../c", base: "foo:a/b", expected: ["foo:c"] },
 		{ num: 3, ref: "foo:.", base: "foo:a", expected: ["foo:"] },

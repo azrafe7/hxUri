@@ -12,8 +12,6 @@ class TestParams {
     // weirdness with embedded javascript inside a html document
     static var sep:String = String.fromCharCode(38);
 
-    ////////////////////// parsing query string /////////////////////////
-
     var query:String;
     var u:Uri;
 	var q:UriQuery;
@@ -45,7 +43,7 @@ class TestParams {
 		Assert.equals(1,              p.get("foo").length);
 		Assert.equals("baz",          p.get("bar")[0]);
 		Assert.equals("buz",          p.get("bar")[1]);
-		Assert.equals("2",            p.get("bar").length);
+		Assert.equals(2,              p.get("bar").length);
 		Assert.equals("James T Kirk", p.get("capt")[0]);
 		Assert.equals(1,              p.get("capt").length);
 

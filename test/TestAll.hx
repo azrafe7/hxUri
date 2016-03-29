@@ -1,7 +1,9 @@
 package;
 
 import hxUri.TestParams;
+import hxUri.TestParse;
 import hxUri.TestResolve;
+import hxUri.TestToString;
 import hxUri.Uri;
 
 import utest.Runner;
@@ -13,6 +15,8 @@ class TestAll {
 		var runner = new Runner();
 		
 		runner.addCase(new TestParams());
+		runner.addCase(new TestParse());
+		runner.addCase(new TestToString());
 		runner.addCase(new TestResolve());
 		
 		Report.create(runner);
