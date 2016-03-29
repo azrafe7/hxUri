@@ -60,6 +60,10 @@ abstract Uri(UriData) from UriData to UriData {
 		this = new UriData(uri);
 	}
 	
+	public function clone():Uri {
+		return new Uri(this.toString());
+	}
+	
 	@:to public function toString():String {
 		return this.toString();
 	}
