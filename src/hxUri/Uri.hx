@@ -45,10 +45,12 @@ import Map;
  *  - implemented as abstract
  *  - fluent interface for Uri setters
  *  - using an OrderedMap for params
- *  - printing params retains the order of insertion (they are not sorted as in the original impl.)
+ *  - enumerating params retains keys' insertion order (they are not sorted as in the original impl.)
  *  - added getParams(key) to get the array of values associated with key
  *  - init uri fields to "" (empty string), instead of null
  *  - to/from String
+ *  
+ *  @see http://web.archive.org/web/20150518202232/https://skew.org/uri/uri_tests.html for tests with various implementation
  */
 
 @:forward
