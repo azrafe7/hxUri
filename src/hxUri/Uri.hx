@@ -1,5 +1,6 @@
 /*
  * Copyright © 2007 Dominic Mitchell
+ * Copyright © 2016 Giuseppe Di Mauro (haxe port and improvements)
  * 
  * All rights reserved.
  * 
@@ -48,7 +49,8 @@ using hxUri.Uri.Tools;
  *  - using an OrderedMap for params
  *  - enumerating params retains keys' insertion order (they are not sorted as in the original impl.)
  *  - added getParams(key) to get the array of values associated with key
- *  - init uri fields to "" (empty string), instead of null
+ *  - added hasFragment, hasScheme, etc. (useful f.e. to represent an empty fragment (as in http://www.example.com/emptyfrag#))
+ *  - getFragment, getScheme, etc. are guaranteed to return an instance of a string (use hasFragment to check if the value is defined)
  *  - to/from String
  *  
  *  @see http://web.archive.org/web/20150518202232/https://skew.org/uri/uri_tests.html for tests with various implementation
@@ -90,7 +92,7 @@ abstract Uri(UriData) from UriData to UriData {
     // RFC3986 §5.2.3 (Merge Paths)
     static function merge(base:Uri, relPath:String) {
         var dirName = ~/^(.*)\//;
-        if (!base.authority.isNullOrEmpty() && base.path.isNullOrEmpty()) {
+        if (!base.authority.isNullOrEmpty() && base.path == "") {
             return "/" + relPath;
         }
         else {
@@ -101,7 +103,7 @@ abstract Uri(UriData) from UriData to UriData {
 
 	// Based on the regex in RFC2396 Appendix B.
 	static var parser = ~/^(?:([^:\/?#]+):)?(?:\/\/([^\/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?/;
-        
+  
     // Match two path segments, where the second is ".." and the first must
     // not be "..".
     static var doubleDot:EReg = ~/\/((?!\.\.\/)[^\/]*)\/\.\.\//;
@@ -111,23 +113,25 @@ abstract Uri(UriData) from UriData to UriData {
         if (path.isNullOrEmpty()) {
             return "";
         }
-        // Remove any single dots
+        // Replace any single dots
         var newPath = ~/\/\.\//g.replace(path, '/');
-        // Remove any trailing single dots.
+        // Replace any trailing single dots.
         newPath = ~/\/\.$/.replace(newPath, '/');
-        // Remove any double dots and the path previous.  NB: We can't use
+        // Replace any double dots and the path previous.  NB: We can't use
         // the "g", modifier because we are changing the string that we're
         // matching over.
         while (doubleDot.match(newPath)) {
             newPath = doubleDot.replace(newPath, '/');
         }
-        // Remove any trailing double dots.
+        // Replace any trailing double dots.
         newPath = ~/\/([^\/]*)\/\.\.$/.replace(newPath, '/');
         // If there are any remaining double dot bits, then they're wrong
         // and must be nuked.  Again, we can't use the g modifier.
         while (~/\/\.\.\//.match(newPath)) {
             newPath = ~/\/\.\.\//.replace(newPath, '/');
         }
+        // Remove starting dots forming complete paths (".", "..") and "./"
+		newPath = ~/(^\.+$)|(^\.\/)/.replace(newPath, '');
         return newPath;
     }
 }    
@@ -136,11 +140,29 @@ abstract Uri(UriData) from UriData to UriData {
 @:allow(hxUri.Uri)
 class UriData {
 	
-	var scheme:String    = "";
-	var authority:String = "";
-	var path:String      = "";
-	var query:String     = "";
-	var fragment:String  = "";
+	var scheme:String    = null;
+	var authority:String = null;
+	var path:String      = null;
+	var query:String     = null;
+	var fragment:String  = null;
+	
+	
+	// The following return true only if the parser regex has matched the related fields
+	
+	var hasScheme(get, never):Bool;
+	inline function get_hasScheme():Bool return scheme != null;
+	
+	var hasAuthority(get, never):Bool;
+	inline function get_hasAuthority():Bool return authority != null;
+
+	var hasPath(get, never):Bool;
+	inline function get_hasPath():Bool return path != null;
+	
+	var hasQuery(get, never):Bool;
+	inline function get_hasQuery():Bool return query != null;
+	
+	var hasFragment(get, never):Bool;
+	inline function get_hasFragment():Bool return fragment != null;
 	
 	
     //// URI CLASS /////
@@ -151,18 +173,17 @@ class UriData {
 		var result = Uri.parser.matchAll(uri);
         
         // Keep the results in private variables.
-		for (i in 0...6) if (result[i] == null) result[i] = "";
-        scheme    = result[1];
+		scheme    = result[1];
         authority = result[2];
         path      = result[3];
         query     = result[4];
         fragment  = result[5];
 	}
 	
-	// Accessors.
+	// Accessors (return "" in case the related field is null).
 	
 	public function getScheme():String {
-		return scheme;
+		return hasScheme ? scheme : "";
 	}
 	
 	public function setScheme(scheme:String):Uri {
@@ -171,7 +192,7 @@ class UriData {
 	}
 	
 	public function getAuthority():String {
-		return authority;
+		return hasAuthority ? authority : "";
 	}
 	
 	public function setAuthority(authority:String):Uri {
@@ -180,7 +201,7 @@ class UriData {
 	}
 	
 	public function getPath():String {
-		return path;
+		return hasPath ? path : "";
 	}
 	
 	public function setPath(path:String):Uri {
@@ -189,7 +210,7 @@ class UriData {
 	}
 	
 	public function getQuery():String {
-		return query;
+		return hasQuery ? query : "";
 	}
 	
 	public function setQuery(query:String):Uri {
@@ -198,7 +219,7 @@ class UriData {
 	}
 	
 	public function getFragment():String {
-		return fragment;
+		return hasFragment ? fragment : "";
 	}
 	
 	public function setFragment(fragment:String):Uri {
@@ -210,20 +231,20 @@ class UriData {
     // Restore the URI to its stringy glory.
     public function toString():String {
         var str = "";
-        if (!this.getScheme().isNullOrEmpty()) {
-            str += this.getScheme() + ":";
+        if (hasScheme) {
+            str += scheme + ":";
         }
-        if (!this.getAuthority().isNullOrEmpty()) {
-            str += "//" + this.getAuthority();
+        if (hasAuthority) {
+            str += "//" + authority;
         }
-        if (!this.getPath().isNullOrEmpty()) {
-            str += this.getPath();
+        if (hasPath) {
+            str += path;
         }
-        if (!this.getQuery().isNullOrEmpty()) {
-            str += "?" + this.getQuery();
+        if (hasQuery) {
+            str += "?" + query;
         }
-        if (!this.getFragment().isNullOrEmpty()) {
-            str += "#" + this.getFragment();
+        if (hasFragment) {
+            str += "#" + fragment;
         }
         return str;
     }
@@ -231,48 +252,48 @@ class UriData {
     // RFC3986 §5.2.2. Transform References;
     public function resolve(base:Uri):Uri {
         var target = new Uri();
-        if (!this.getScheme().isNullOrEmpty()) {
+        if (this.hasScheme) {
             target
-				.setScheme(this.getScheme())
-				.setAuthority(this.getAuthority())
-				.setPath(Uri.removeDotSegments(this.getPath()))
-				.setQuery(this.getQuery());
+				.setScheme(this.scheme)
+				.setAuthority(this.authority)
+				.setPath(Uri.removeDotSegments(this.path))
+				.setQuery(this.query);
         }
         else {
-            if (!this.getAuthority().isNullOrEmpty()) {
+            if (this.hasAuthority) {
                 target
-					.setAuthority(this.getAuthority())
-					.setPath(Uri.removeDotSegments(this.getPath()))
-					.setQuery(this.getQuery());
+					.setAuthority(this.authority)
+					.setPath(Uri.removeDotSegments(this.path))
+					.setQuery(this.query);
             }        
             else {
                 // XXX Original spec says "if defined and empty"…;
-                if (this.getPath().isNullOrEmpty()) {
-                    target.setPath(base.getPath());
-                    if (!this.getQuery().isNullOrEmpty()) {
-                        target.setQuery(this.getQuery());
+                if (this.path == "") {
+                    target.setPath(base.path);
+                    if (this.hasQuery) {
+                        target.setQuery(this.query);
                     }
                     else {
-                        target.setQuery(base.getQuery());
+                        target.setQuery(base.query);
                     }
                 }
                 else {
                     if (this.getPath().charAt(0) == '/') {
-                        target.setPath(Uri.removeDotSegments(this.getPath()));
+                        target.setPath(Uri.removeDotSegments(this.path));
                     } else {
-                        target.setPath(Uri.merge(base, this.getPath()));
-                        target.setPath(Uri.removeDotSegments(target.getPath()));
+                        target.setPath(Uri.merge(base, this.path));
+                        target.setPath(Uri.removeDotSegments(target.path));
                     }
-                    target.setQuery(this.getQuery());
+                    target.setQuery(this.query);
                 }
-                target.setAuthority(base.getAuthority());
+                target.setAuthority(base.authority);
             }
-            target.setScheme(base.getScheme());
+            target.setScheme(base.scheme);
         }
 
-        target.setFragment(this.getFragment());
+        target.setFragment(this.fragment);
 
-        return target;
+		return target;
     }
     
 	
