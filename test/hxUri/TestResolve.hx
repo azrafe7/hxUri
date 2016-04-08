@@ -24,10 +24,12 @@ class TestResolve {
 			var base = test.base;
 			var expected = test.expected;
 			
-			var result = Uri.fromString(ref).resolve(base).toString();
+			var uri = Uri.fromString(ref).resolve(base);
+			var result = uri.toString();
 			
 			var expectedJoin = expected.join('" or "');
 			var errorMsg = '[test ${test.num}]: expected "$expectedJoin" but it is "$result"';
+			errorMsg += ' scheme:${uri.getScheme()} auth:${uri.getAuthority()} path:${uri.getPath()} query:${uri.getQuery()} frag:${uri.getFragment()}';
 			
 			if (expected.length == 1) {
 				Assert.equals(expected[0], result, errorMsg);
@@ -47,9 +49,11 @@ class TestResolve {
 			var base = this.base;
 			var expected = test[1];
 			
-			var result = Uri.fromString(ref).resolve(base).toString();
+			var uri = Uri.fromString(ref).resolve(base);
+			var result = uri.toString();
 			
 			var errorMsg = '[test ${i + 1}]: expected "$expected" but it is "$result"';
+			errorMsg += ' scheme:${uri.getScheme()} auth:${uri.getAuthority()} path:${uri.getPath()} query:${uri.getQuery()} frag:${uri.getFragment()}';
 			
 			Assert.equals(expected, result, errorMsg);
 		}
