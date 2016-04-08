@@ -33,6 +33,7 @@ package hxUri;
 import hxUri.Uri.UriQuery;
 import Map;
 
+using hxUri.Uri.Tools;
 
 /**
  * An URI datatype.  Based upon examples in RFC3986.
@@ -89,11 +90,11 @@ abstract Uri(UriData) from UriData to UriData {
     // RFC3986 §5.2.3 (Merge Paths)
     static function merge(base:Uri, relPath:String) {
         var dirName = ~/^(.*)\//;
-        if (!Tools.isNullOrEmpty(base.authority) && Tools.isNullOrEmpty(base.path)) {
+        if (!base.authority.isNullOrEmpty() && base.path.isNullOrEmpty()) {
             return "/" + relPath;
         }
         else {
-			var basePath = (dirName.match(base.getPath())) ? Tools.matchAll(dirName, base.getPath())[0] : "";
+			var basePath = (dirName.match(base.getPath())) ? dirName.matchAll(base.getPath())[0] : "";
 			return basePath + relPath;
         }
     }
@@ -107,7 +108,7 @@ abstract Uri(UriData) from UriData to UriData {
 
 	
     static function removeDotSegments(path:String):String {
-        if (Tools.isNullOrEmpty(path)) {
+        if (path.isNullOrEmpty()) {
             return "";
         }
         // Remove any single dots
@@ -147,7 +148,7 @@ class UriData {
     // Constructor for the URI object.  Parse a string into its components.
 	public function new(uri:String = "") {
 		
-		var result = Tools.matchAll(Uri.parser, uri);
+		var result = Uri.parser.matchAll(uri);
         
         // Keep the results in private variables.
 		for (i in 0...6) if (result[i] == null) result[i] = "";
@@ -209,19 +210,19 @@ class UriData {
     // Restore the URI to its stringy glory.
     public function toString():String {
         var str = "";
-        if (!Tools.isNullOrEmpty(this.getScheme())) {
+        if (!this.getScheme().isNullOrEmpty()) {
             str += this.getScheme() + ":";
         }
-        if (!Tools.isNullOrEmpty(this.getAuthority())) {
+        if (!this.getAuthority().isNullOrEmpty()) {
             str += "//" + this.getAuthority();
         }
-        if (!Tools.isNullOrEmpty(this.getPath())) {
+        if (!this.getPath().isNullOrEmpty()) {
             str += this.getPath();
         }
-        if (!Tools.isNullOrEmpty(this.getQuery())) {
+        if (!this.getQuery().isNullOrEmpty()) {
             str += "?" + this.getQuery();
         }
-        if (!Tools.isNullOrEmpty(this.getFragment())) {
+        if (!this.getFragment().isNullOrEmpty()) {
             str += "#" + this.getFragment();
         }
         return str;
@@ -230,7 +231,7 @@ class UriData {
     // RFC3986 §5.2.2. Transform References;
     public function resolve(base:Uri):Uri {
         var target = new Uri();
-        if (!Tools.isNullOrEmpty(this.getScheme())) {
+        if (!this.getScheme().isNullOrEmpty()) {
             target
 				.setScheme(this.getScheme())
 				.setAuthority(this.getAuthority())
@@ -238,7 +239,7 @@ class UriData {
 				.setQuery(this.getQuery());
         }
         else {
-            if (!Tools.isNullOrEmpty(this.getAuthority())) {
+            if (!this.getAuthority().isNullOrEmpty()) {
                 target
 					.setAuthority(this.getAuthority())
 					.setPath(Uri.removeDotSegments(this.getPath()))
@@ -246,9 +247,9 @@ class UriData {
             }        
             else {
                 // XXX Original spec says "if defined and empty"…;
-                if (Tools.isNullOrEmpty(this.getPath())) {
+                if (this.getPath().isNullOrEmpty()) {
                     target.setPath(base.getPath());
-                    if (!Tools.isNullOrEmpty(this.getQuery())) {
+                    if (!this.getQuery().isNullOrEmpty()) {
                         target.setQuery(this.getQuery());
                     }
                     else {
@@ -354,7 +355,7 @@ class UriQuery {
 }
 
 
-private class Tools {
+class Tools {
 	
 	public inline static function isNullOrEmpty(str:String):Bool {
 		return str == null || str == "";
