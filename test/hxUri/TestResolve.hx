@@ -42,17 +42,17 @@ class TestResolve {
 		Assert.warn('hxUri resolve (skew.org tests): $passed of ${Assert.results.length} passed');
     }
 
-    public function testResolve() {
-		for (i in 0...resolve_tests.length) {
-			var test = resolve_tests[i];
-			var ref = test[0];
-			var base = this.base;
-			var expected = test[1];
+    public function testResolveUrijs() {
+		for (test in testsUrijs) {
+			var ref = test.ref;
+			var base = test.base;
+			var expected = test.expected;
 			
 			var uri = Uri.fromString(ref).resolve(base);
 			var result = uri.toString();
 			
-			var errorMsg = '[test ${i + 1}]: expected "$expected" but it is "$result"';
+			var expectedJoin = expected.join('" or "');
+			var errorMsg = '[test ${test.num}]: expected "$expectedJoin" but it is "$result"';
 			errorMsg += ' scheme:${uri.getScheme()} auth:${uri.getAuthority()} path:${uri.getPath()} query:${uri.getQuery()} frag:${uri.getFragment()}';
 			
 			Assert.equals(expected, result, errorMsg);
@@ -64,62 +64,63 @@ class TestResolve {
 
 	
 	// from resolve.t.html
-	var base = new Uri("http://a/b/c/d;p?q");
-	var resolve_tests:Array<Array<String>> = [
+	static var base = new Uri("http://a/b/c/d;p?q");
+	
+	var testsUrijs:Array<UriTest> = [
 		// Normal examples.
-		["g:h",     "g:h"],
-		["g",       "http://a/b/c/g"],
-		["./g",     "http://a/b/c/g"],
-		["g/",      "http://a/b/c/g/"],
-		["/g",      "http://a/g"],
-		["//g",     "http://g"],
-		["?y",      "http://a/b/c/d;p?y"],
-		["g?y",     "http://a/b/c/g?y"],
-		["#s",      "http://a/b/c/d;p?q#s"],
-		["g#s",     "http://a/b/c/g#s"],
-		["g?y#s",   "http://a/b/c/g?y#s"],
-		[";x",      "http://a/b/c/;x"],
-		["g;x",     "http://a/b/c/g;x"],
-		["g;x?y#s", "http://a/b/c/g;x?y#s"],
-		["",        "http://a/b/c/d;p?q"],
-		[".",       "http://a/b/c/"],
-		["./",      "http://a/b/c/"],
-		["..",      "http://a/b/"],
-		["../",     "http://a/b/"],
-		["../g",    "http://a/b/g"],
-		["../..",   "http://a/"],
-		["../../",  "http://a/"],
-		["../../g", "http://a/g"],
+		{ num: 0, ref: "g:h", base: base, expected: ["g:h"]},
+		{ num: 1, ref: "g", base: base, expected: ["http://a/b/c/g"]},
+		{ num: 2, ref: "./g", base: base, expected: ["http://a/b/c/g"]},
+		{ num: 3, ref: "g/", base: base, expected: ["http://a/b/c/g/"]},
+		{ num: 4, ref: "/g", base: base, expected: ["http://a/g"]},
+		{ num: 5, ref: "//g", base: base, expected: ["http://g"]},
+		{ num: 6, ref: "?y", base: base, expected: ["http://a/b/c/d;p?y"]},
+		{ num: 7, ref: "g?y", base: base, expected: ["http://a/b/c/g?y"]},
+		{ num: 8, ref: "#s", base: base, expected: ["http://a/b/c/d;p?q#s"]},
+		{ num: 9, ref: "g#s", base: base, expected: ["http://a/b/c/g#s"]},
+		{ num: 10, ref: "g?y#s", base: base, expected: ["http://a/b/c/g?y#s"]},
+		{ num: 11, ref: ";x", base: base, expected: ["http://a/b/c/;x"]},
+		{ num: 12, ref: "g;x", base: base, expected: ["http://a/b/c/g;x"]},
+		{ num: 13, ref: "g;x?y#s", base: base, expected: ["http://a/b/c/g;x?y#s"]},
+		{ num: 14, ref: "", base: base, expected: ["http://a/b/c/d;p?q"]},
+		{ num: 15, ref: ".", base: base, expected: ["http://a/b/c/"]},
+		{ num: 16, ref: "./", base: base, expected: ["http://a/b/c/"]},
+		{ num: 17, ref: "..", base: base, expected: ["http://a/b/"]},
+		{ num: 18, ref: "../", base: base, expected: ["http://a/b/"]},
+		{ num: 19, ref: "../g", base: base, expected: ["http://a/b/g"]},
+		{ num: 20, ref: "../..", base: base, expected: ["http://a/"]},
+		{ num: 21, ref: "../../", base: base, expected: ["http://a/"]},
+		{ num: 22, ref: "../../g", base: base, expected: ["http://a/g"]},
 
 		// Abnormal examples.
 		// 1. Going up further than is possible.
-		["../../../g",    "http://a/g"],
-		["../../../../g", "http://a/g"],
+		{ num: 23, ref: "../../../g", base: base, expected: ["http://a/g"]},
+		{ num: 24, ref: "../../../../g", base: base, expected: ["http://a/g"]},
 
 		// 2. Not matching dot boundaries correctly.
-		["/./g",  "http://a/g"],
-		["/../g", "http://a/g"],
-		["g.",    "http://a/b/c/g."],
-		[".g",    "http://a/b/c/.g"],
-		["g..",   "http://a/b/c/g.."],
-		["..g",   "http://a/b/c/..g"],
+		{ num: 25, ref: "/./g", base: base, expected: ["http://a/g"]},
+		{ num: 26, ref: "/../g", base: base, expected: ["http://a/g"]},
+		{ num: 27, ref: "g.", base: base, expected: ["http://a/b/c/g."]},
+		{ num: 28, ref: ".g", base: base, expected: ["http://a/b/c/.g"]},
+		{ num: 29, ref: "g..", base: base, expected: ["http://a/b/c/g.."]},
+		{ num: 30, ref: "..g", base: base, expected: ["http://a/b/c/..g"]},
 
 		// 3. Nonsensical path segments.
-		["./../g",     "http://a/b/g"],
-		["./g/.",      "http://a/b/c/g/"],
-		["g/./h",      "http://a/b/c/g/h"],
-		["g/../h",     "http://a/b/c/h"],
-		["g;x=1/./y",  "http://a/b/c/g;x=1/y"],
-		["g;x=1/../y", "http://a/b/c/y"],
+		{ num: 31, ref: "./../g", base: base, expected: ["http://a/b/g"]},
+		{ num: 32, ref: "./g/.", base: base, expected: ["http://a/b/c/g/"]},
+		{ num: 33, ref: "g/./h", base: base, expected: ["http://a/b/c/g/h"]},
+		{ num: 34, ref: "g/../h", base: base, expected: ["http://a/b/c/h"]},
+		{ num: 35, ref: "g;x=1/./y", base: base, expected: ["http://a/b/c/g;x=1/y"]},
+		{ num: 36, ref: "g;x=1/../y", base: base, expected: ["http://a/b/c/y"]},
 
 		// 4. Paths in the query string should be ignored.
-		["g?y/./x",  "http://a/b/c/g?y/./x"],
-		["g?y/../x", "http://a/b/c/g?y/../x"],
-		["g#s/./x",  "http://a/b/c/g#s/./x"],
-		["g#s/../x", "http://a/b/c/g#s/../x"],
+		{ num: 37, ref: "g?y/./x", base: base, expected: ["http://a/b/c/g?y/./x"]},
+		{ num: 38, ref: "g?y/../x", base: base, expected: ["http://a/b/c/g?y/../x"]},
+		{ num: 39, ref: "g#s/./x", base: base, expected: ["http://a/b/c/g#s/./x"]},
+		{ num: 40, ref: "g#s/../x", base: base, expected: ["http://a/b/c/g#s/../x"]},
 
 		// 5. Backwards compatibility
-		["http:g", "http:g"]
+		{ num: 41, ref: "http:g", base: base, expected: ["http:g"]}
 	];
 	
 	
