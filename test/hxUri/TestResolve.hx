@@ -18,8 +18,8 @@ class TestResolve {
 	
 	public function new() { }
 	
-    public function testResolveSkew() {
-		for (test in testsSkew) {
+    public function _testResolve(tests:Array<UriTest>, warn:String) {
+		for (test in tests) {
 			var ref = test.ref;
 			var base = test.base;
 			var expected = test.expected;
@@ -39,34 +39,22 @@ class TestResolve {
 		}
 		
 		var passed = Assert.results.filter(function(a) { return a.match(Success(_)); }).length;
-		Assert.warn('hxUri resolve (skew.org tests): $passed of ${Assert.results.length} passed');
+		Assert.warn('$warn: $passed of ${Assert.results.length} passed');
     }
-
-    public function testResolveUrijs() {
-		for (test in testsUrijs) {
-			var ref = test.ref;
-			var base = test.base;
-			var expected = test.expected;
-			
-			var uri = Uri.fromString(ref).resolve(base);
-			var result = uri.toString();
-			
-			var expectedJoin = expected.join('" or "');
-			var errorMsg = '[test ${test.num}]: expected "$expectedJoin" but it is "$result"';
-			errorMsg += ' scheme:${uri.getScheme()} auth:${uri.getAuthority()} path:${uri.getPath()} query:${uri.getQuery()} frag:${uri.getFragment()}';
-			
-			Assert.equals(expected, result, errorMsg);
-		}
-		
-		var passed = Assert.results.filter(function(a) { return a.match(Success(_)); }).length;
-		Assert.warn('hxUri resolve (js-uri tests): $passed of ${Assert.results.length} passed');
-    }
+    
+	public function testResolveSkew() {
+		_testResolve(testsSkew, "hxUri resolve (skew.org tests)");
+	}
+    
+	public function testResolveJsuri() {
+		_testResolve(testsJsuri, "hxUri resolve (js-uri tests)");
+	}
 
 	
 	// from resolve.t.html
 	static var base = new Uri("http://a/b/c/d;p?q");
 	
-	var testsUrijs:Array<UriTest> = [
+	var testsJsuri:Array<UriTest> = [
 		// Normal examples.
 		{ num: 0, ref: "g:h", base: base, expected: ["g:h"]},
 		{ num: 1, ref: "g", base: base, expected: ["http://a/b/c/g"]},
