@@ -40,20 +40,22 @@ using hxUri.Uri.Tools;
  * An URI datatype.  Based upon examples in RFC3986.
  * 
  * 
- * This is a port of js-uri (by azrafe7). Adapted from https://code.google.com/archive/p/js-uri/
+ * This code is based on js-uri (https://code.google.com/archive/p/js-uri/)
  * 
  * NOTES:
  * 
  *  - implemented as abstract
  *  - fluent interface for Uri setters
- *  - using an OrderedMap for params
- *  - enumerating params retains keys' insertion order (they are not sorted as in the original impl.)
+ *  - using an OrderedMap for params (using Sven Bergström's implementation - see below)
+ *    (this means that enumerating params retains keys' insertion order (they are not sorted as in the original impl.))
  *  - added getParams(key) to get the array of values associated with key
- *  - added hasFragment, hasScheme, etc. (useful f.e. to represent an empty fragment (as in http://www.example.com/emptyfrag#))
- *  - getFragment, getScheme, etc. are guaranteed to return an instance of a string (use hasFragment to check if the value is defined)
+ *  - added hasFragment, hasScheme, etc. (f.e. useful to represent/identify an empty fragment value (as in "http://www.example.com/emptyfrag#"))
+ *  - getFragment(), getScheme(), etc. are guaranteed to return "" if the related field is null
  *  - to/from String
  *  
  *  @see http://web.archive.org/web/20150518202232/https://skew.org/uri/uri_tests.html for tests with various implementation
+ * 
+ * @author azrafe7
  */
 
 @:forward
