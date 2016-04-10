@@ -98,7 +98,7 @@ abstract Uri(UriData) from UriData to UriData {
             return "/" + relPath;
         }
         else {
-			var basePath = (dirName.match(base.getPath())) ? dirName.matchAll(base.getPath())[0] : "";
+			var basePath = (dirName.match(base.getPath())) ? dirName.matched(0) : "";
 			return basePath + relPath;
         }
     }
