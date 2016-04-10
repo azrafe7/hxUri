@@ -1,3 +1,12 @@
+hxUri
+-----
+
+Uri datatype with resolve functionality. Based on js-uri.
+
+
+ORIGINAL README:
+
+
 js-uri <http://code.google.com/p/js-uri/>
 =========================================
 
