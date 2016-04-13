@@ -207,7 +207,6 @@ class UriData {
 	}
 	
 	public function setPath(path:String):Uri {
-		if (path.charAt(0) != "/") path = "/" + path;
 		this.path = path;
 		return this;
 	}

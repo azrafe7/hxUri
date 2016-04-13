@@ -22,7 +22,7 @@ recreates and resolves them. For example:
     .addParam("q", "moon landing site:" + wiki);
 
   var searchGoogle = new Uri("https://google.com/path")
-    .setPath("search")
+    .setPath("/search")
     .setQuery(query.toString());
 
   trace(query.getParam("q"));    // moon landing site:https://wikipedia.org/
