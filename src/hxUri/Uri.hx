@@ -329,14 +329,10 @@ class UriQuery {
         var kvp = sourceString.split(this.separator);
         var list, key, value;
         for (i in 0...kvp.length) {
-            // var [key,value] = kvp.split("=", 2) only works on >= JS 1.7
             list  = kvp[i].split("=").splice(0, 2);
             key   = Uri.unescape(~/\+/g.replace(list[0], " "));
             value = Uri.unescape(~/\+/g.replace(list[1], " "));
-            if (!this.params.exists(key)) {
-                this.params.set(key, []);
-            }
-            this.params.get(key).push(value);
+            addParam(key, value);
         }
 		
 		return this;
@@ -354,6 +350,15 @@ class UriQuery {
             return this.params.get(key);
         }
         return null;
+    }
+
+	public function addParam(key:String, value:String):UriQuery {
+		if (!this.params.exists(key)) {
+			this.params.set(key, []);
+		}
+		this.params.get(key).push(value);
+		
+		return this;
     }
 
 	public function toString():String {
