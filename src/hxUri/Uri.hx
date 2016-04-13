@@ -33,6 +33,7 @@ package hxUri;
 
 import hxUri.Uri.UriQuery;
 import Map;
+import StringTools;
 
 using hxUri.Uri.Tools;
 
@@ -82,13 +83,12 @@ abstract Uri(UriData) from UriData to UriData {
 	
 	//// HELPER FUNCTIONS /////
   
-    // TODO: Make these do something
     static function escape(source) {
-        return source;
+        return StringTools.urlEncode(source);
     }
 
     static function unescape(source) {
-        return source;
+        return StringTools.urlDecode(source);
     }
 
     // RFC3986 §5.2.3 (Merge Paths)
@@ -316,9 +316,10 @@ class UriQuery {
 	public var params:UriQueryParams = null;
 	
 
-	public function new(separator:String = "&") { 
+	public function new(sourceString:String = "", separator:String = "&") { 
 		this.separator = separator;
 		this.params = new OrderedMap(new Map());
+		addStringParams(sourceString);
 	}
 	
     // From http://www.w3.org/TR/html401/interact/forms.html#h-17.13.4.1
@@ -330,9 +331,8 @@ class UriQuery {
         var list, key, value;
         for (i in 0...kvp.length) {
             list  = kvp[i].split("=").splice(0, 2);
-            key   = Uri.unescape(~/\+/g.replace(list[0], " "));
-            value = Uri.unescape(~/\+/g.replace(list[1], " "));
-            addParam(key, value);
+			if (list[1] == null) list[1] = "";
+            addParam(list[0], list[1]);
         }
 		
 		return this;
@@ -353,9 +353,12 @@ class UriQuery {
     }
 
 	public function addParam(key:String, value:String):UriQuery {
+		if (key == "") return this;
 		if (!this.params.exists(key)) {
 			this.params.set(key, []);
 		}
+		key   = Uri.unescape(~/\+/g.replace(key, " "));
+		value = Uri.unescape(~/\+/g.replace(value, " "));
 		this.params.get(key).push(value);
 		
 		return this;
@@ -365,7 +368,12 @@ class UriQuery {
         var kvp = [];
         for (key in params.keys()) {
 			var list = this.params.get(key);
-			for (value in list) kvp.push(~/ /g.replace(key, "+") + "=" + ~/ /g.replace(value, "+"));
+			key = ~/[ ]+/g.split(key).map(Uri.escape).join("+");
+			for (value in list) {
+				value = ~/[ ]+/g.split(value).map(Uri.escape).join("+");
+				if (value != "") kvp.push(key + "=" + value);
+				else kvp.push(key); // handle empty value
+			}
 		}
         return kvp.join(this.separator);
     }
