@@ -14,9 +14,9 @@ recreates and resolves them. For example:
 
   var blah = new Uri("blah");
   var blahFull = blah.resolve(someUri);
-  trace(blahFull);              // http://www.example.com/foo/blah
+  trace(blahFull);               // http://www.example.com/foo/blah
 
-  var wiki = "https://www.wikipedia.org/";
+  var wiki = "https://wikipedia.org/";
 
   var query = new UriQuery()
     .addParam("q", "moon landing site:" + wiki);
@@ -25,8 +25,8 @@ recreates and resolves them. For example:
     .setPath("search")
     .setQuery(query.toString());
 
-  trace(query.getParam("q"));    // moon landing site:https://www.wikipedia.org/
-  trace(searchGoogle);           // https://google.com/search?q=moon+landing+site%3Ahttps%3A%2F%2Fwww.wikipedia.org%2F
+  trace(query.getParam("q"));    // moon landing site:https://wikipedia.org/
+  trace(searchGoogle);           // https://google.com/search?q=moon+landing+site%3Ahttps%3A%2F%2Fwikipedia.org%2F
 ```
 
 Tests are taken from [js-uri](https://code.google.com/archive/p/js-uri/) and [skew.org](http://web.archive.org/web/20150518202232/https://skew.org/uri/uri_tests.html) (see the [test](test/) folder).
